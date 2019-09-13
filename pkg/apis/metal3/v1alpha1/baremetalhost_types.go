@@ -104,6 +104,61 @@ type BMCDetails struct {
 	CredentialsName string `json:"credentialsName"`
 }
 
+// BootMode is the boot mode of the system
+type BootMode string
+
+// Allowed boot mode from metal3
+const (
+	Uefi BootMode = "UEFI"
+	Legacy BootMode = "legacy"
+)
+
+// IRMCSettings is advanced BIOS settings that are supported by iRMC driver
+type  IRMCSettings struct {
+	// The UEFI FW checks the controller health status
+	EnableCheckControllersHealthStatus *bool `json:"enableCheckControllersHealthStatus,omitempty"`
+	// The number of active processor cores 1…n. Option 0 indicates that all available processor cores are active.
+	CPUActiveProcessorCores *int `json:"cpuActiveProcessorCores,omitempty"`
+	// The processor loads the requested cache line and the adjacent cache line
+	EnableCPUAdjacentCacheLinePrefetch *bool `json:"enableCPUAdjacentCacheLinePrefetch,omitempty"`
+	// The system BIOS can be written. Flash BIOS update is possible
+	EnableFlashWrite *bool `json:"enableFlashWrite,omitempty"`
+	// Boot Options will not be removed from “Boot Option Priority” list.
+	EnableKeepVoidBootOptions *bool `json:"enableKeepVoidBootOptions,omitempty"`
+	// Specifies whether the Compatibility Support Module (CSM) is executed.
+	EnableLaunchCSM *bool `json:"enableLaunchCSM,omitempty"`
+	// Prevents the OS from overruling any energy efficiency policy setting of the setup
+	EnableOSEnergyPerformanceOverride *bool `json:"enableOSEnergyPerformanceOverride,omitempty"`
+	// Active State Power Management (ASPM) is used to power-manage the PCI Express links, thus consuming less power
+	// +kubebuilder:validation:Enum=Disabled,Auto,L0Limited,L1only,L0Force
+	PciAspmSupport string `json:"pciAspmSupport,omitempty"`
+	// Specifies if memory resources above the 4GB address boundary can be assigned to PCI devices
+	EnablePciAbove4GDecoding *bool `json:"enablePciAbove4GDecoding,omitempty"`
+	// Specifies whether the switch on sources for the system are managed by the BIOS or the ACPI operating system
+	// +kubebuilder:validation:Enum=BiosControlled,AcpiControlled
+	PowerOnSource string `json:"powerOnSource,omitempty"`
+	// Single Root IO Virtualization Support is active
+	EnableSingleRootIOVirtualizationSupport *bool `json:"enableSingleRootIOVirtualizationSupport,omitempty"`
+}
+
+// BIOSConfig contains the configuration that you want to configure BIOS settings in Bare metal server
+type BIOSConfig struct {
+
+	// Select the boot mode of the system. Allowed values are uefi, legacy
+	// +kubebuilder:validation:Enum=uefi,legacy
+	BootMode BootMode `json:"bootMode,omitempty"`
+
+	// Hyper-threading technology allows a single physical processor core to appear as several
+	// logical processors. This supports following options: true, false.
+	EnableHyperThreading bool `json:"enableHyperThreading,omitempty"`
+
+	// Supports the virtualization of platform hardware. This supports following options: true, false.
+	EnableVirtualization bool `json:"enableVirtualization,omitempty"`
+
+	// Advanced settings that are supported by iRMC driver
+	IRMC *IRMCSettings `json:"irmc,omitempty"`
+}
+
 // BareMetalHostSpec defines the desired state of BareMetalHost
 type BareMetalHostSpec struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code
@@ -117,6 +172,9 @@ type BareMetalHostSpec struct {
 
 	// How do we connect to the BMC?
 	BMC BMCDetails `json:"bmc,omitempty"`
+
+	// BIOS settings for bare metal server
+	BIOS *BIOSConfig `json:"bios,omitempty"`
 
 	// What is the name of the hardware profile for this host? It
 	// should only be necessary to set this when inspection cannot
