@@ -26,6 +26,10 @@ spec:
 {{- if .HardwareProfile }}
   hardwareProfile: {{ .HardwareProfile }}
 {{- end }}
+{{- if .BootMode }}
+  bios:
+    bootMode: {{ .BootMode }}
+{{- end }}
 {{- if .BootMacAddress }}
   bootMACAddress: {{ .BootMacAddress }}
 {{- end }}
@@ -47,6 +51,7 @@ type Template struct {
 	Password          string
 	HardwareProfile   string
 	BootMacAddress    string
+	BootMode          string
 	Consumer          string
 	ConsumerNamespace string
 }

@@ -15,6 +15,7 @@ func main() {
 	var bmcAddress = flag.String("address", "", "address URL for BMC")
 	var hardwareProfile = flag.String("hardwareprofile", "", "hardwareProfile to be used")
 	var macAddress = flag.String("boot-mac", "", "boot-mac for bootMACAddress")
+	var bootMode = flag.String("boot-mode", "", "boot-mode (e.g., uefi)")
 	var verbose = flag.Bool("v", false, "turn on verbose output")
 	var consumer = flag.String(
 		"consumer", "", "specify name of a related, existing, consumer to link")
@@ -48,6 +49,7 @@ func main() {
 		Password:          *password,
 		HardwareProfile:   *hardwareProfile,
 		BootMacAddress:    *macAddress,
+		BootMode:          *bootMode,
 		Consumer:          strings.TrimSpace(*consumer),
 		ConsumerNamespace: strings.TrimSpace(*consumerNamespace),
 	}
