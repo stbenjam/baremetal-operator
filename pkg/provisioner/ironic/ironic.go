@@ -809,7 +809,9 @@ func (p *ironicProvisioner) getUpdateOptsForNode(ironicNode *nodes.Node, checksu
 
 	// uefi boot
 	if p.host.Spec.BIOS.BootMode == metal3v1alpha1.Uefi {
-		if ironicNode.Properties["capabilities"] != "boot_mode:uefi" {
+		capabilities := ironicNode.Properties["capabilities"].(string)
+
+		if !strings.Contains(capabilities, "boot_mode:uefi") {
 			updates = append(
 				updates,
 				nodes.UpdateOperation{
