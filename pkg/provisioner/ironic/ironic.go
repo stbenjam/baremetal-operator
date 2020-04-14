@@ -176,7 +176,7 @@ func (p *ironicProvisioner) findExistingHost() (ironicNode *nodes.Node, err erro
 		ironicNode, err = nodes.Get(p.client, p.status.ID).Extract()
 		switch err.(type) {
 		case nil:
-			p.log.Info("found existing node by ID")
+			p.log.Info("found existing node by ID", "state", ironicNode.ProvisionState, "last_error", ironicNode.LastError)
 			return ironicNode, nil
 		case gophercloud.ErrDefault404:
 		default:
@@ -190,7 +190,7 @@ func (p *ironicProvisioner) findExistingHost() (ironicNode *nodes.Node, err erro
 	ironicNode, err = nodes.Get(p.client, p.host.Name).Extract()
 	switch err.(type) {
 	case nil:
-		p.log.Info("found existing node by name")
+		p.log.Info("found existing node by name", "state", ironicNode.ProvisionState, "last_error", ironicNode.LastError)
 		return ironicNode, nil
 	case gophercloud.ErrDefault404:
 		return nil, nil
