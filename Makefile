@@ -73,7 +73,7 @@ unit-verbose:
 	VERBOSE=-v make unit
 
 .PHONY: lint
-lint: test-sec $GOPATH/bin/golint generate-check gofmt-check
+lint: test-sec $GOPATH/bin/golint gofmt-check
 	find ./pkg ./cmd -type f -name \*.go  |grep -v zz_ | xargs -L1 golint -set_exit_status
 	go vet ./pkg/... ./cmd/...
 
