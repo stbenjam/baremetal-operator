@@ -41,7 +41,8 @@ test: generate unit lint
 
 .PHONY: generate
 generate:
-	operator-sdk generate k8s
+	operator-sdk generate $(VERBOSE) k8s
+	operator-sdk generate $(VERBOSE) crds
 	openapi-gen \
 		--input-dirs ./pkg/apis/metal3/v1alpha1 \
 		--output-package ./pkg/apis/metal3/v1alpha1 \
@@ -71,14 +72,18 @@ unit-cover-html:
 unit-verbose:
 	VERBOSE=-v make unit
 
-crd_file=deploy/crds/metal3.io_baremetalhosts_crd.yaml
-crd_tmp=.crd.yaml.tmp
-
 .PHONY: lint
-lint: test-sec $GOPATH/bin/golint
+lint: test-sec $GOPATH/bin/golint generate-check gofmt-check
 	find ./pkg ./cmd -type f -name \*.go  |grep -v zz_ | xargs -L1 golint -set_exit_status
 	go vet ./pkg/... ./cmd/...
-	cp $(crd_file) $(crd_tmp); make generate; if ! diff -q $(crd_file) $(crd_tmp); then mv $(crd_tmp) $(crd_file); exit 1; else rm $(crd_tmp); fi
+
+.PHONY: generate-check
+generate-check:
+	./hack/generate.sh
+
+.PHONY: generate-check-local
+generate-check-local:
+	IS_CONTAINER=local ./hack/generate.sh
 
 .PHONY: test-sec
 test-sec: $GOPATH/bin/gosec
@@ -89,6 +94,14 @@ $GOPATH/bin/gosec:
 
 $GOPATH/bin/golint:
 	go get -u golang.org/x/lint/golint
+
+.PHONY: gofmt
+gofmt:
+	gofmt -l -w ./pkg ./cmd
+
+.PHONY: gofmt-check
+gofmt-check:
+	./hack/gofmt.sh
 
 .PHONY: docs
 docs: $(patsubst %.dot,%.png,$(wildcard docs/*.dot))
@@ -105,29 +118,40 @@ e2e-local:
 
 .PHONY: run
 run:
-	operator-sdk up local \
+	operator-sdk run --local \
 		--go-ldflags=$(LDFLAGS) \
-		--namespace=$(RUN_NAMESPACE) \
+		--watch-namespace=$(RUN_NAMESPACE) \
 		--operator-flags="-dev"
 
 .PHONY: demo
 demo:
-	operator-sdk up local \
+	operator-sdk run --local \
 		--go-ldflags=$(LDFLAGS) \
-		--namespace=$(RUN_NAMESPACE) \
+		--watch-namespace=$(RUN_NAMESPACE) \
 		--operator-flags="-dev -demo-mode"
 
 .PHONY: docker
-docker:
+docker: docker-operator docker-sdk
+
+.PHONY: docker-operator
+docker-operator:
 	docker build . -f build/Dockerfile
+
+.PHONY: docker-sdk
+docker-sdk:
+	docker build . -f hack/Dockerfile.operator-sdk
 
 .PHONY: build
 build:
 	@echo LDFLAGS=$(LDFLAGS)
 	go build -mod=vendor -o build/_output/bin/baremetal-operator cmd/manager/main.go
 
+.PHONY: tools
+tools:
+	@echo LDFLAGS=$(LDFLAGS)
+	go build -o build/_output/bin/make-introspection cmd/make-introspection/main.go
+
 .PHONY: deploy
 deploy:
 	cd deploy && kustomize edit set namespace $(RUN_NAMESPACE) && cd ..
 	kustomize build deploy | kubectl apply -f -
-
