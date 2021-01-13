@@ -183,6 +183,7 @@ func (hsm *hostStateMachine) ensureRegistered(info *reconcileInfo) (result actio
 	case metal3v1alpha1.StateRegistering:
 	default:
 		needsReregister = (hsm.Host.Status.ErrorType == metal3v1alpha1.RegistrationError ||
+			hsm.Host.Status.ErrorType == metal3v1alpha1.AdoptionError ||
 			!hsm.Host.Status.GoodCredentials.Match(*info.bmcCredsSecret))
 		if needsReregister {
 			info.log.Info("Retrying registration")

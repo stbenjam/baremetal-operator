@@ -123,6 +123,9 @@ const (
 type ErrorType string
 
 const (
+	// AdoptionError is an error condition occurring when the controller
+	// is unable to adopt an already provisioned host.
+	AdoptionError ErrorType = "adoption error"
 	// RegistrationError is an error condition occurring when the
 	// controller is unable to connect to the Host's baseboard management
 	// controller.
